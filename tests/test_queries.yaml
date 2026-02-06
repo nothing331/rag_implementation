@@ -1,0 +1,81 @@
+# Test cases for the RAG application
+test_cases:
+  - name: "Simple single-domain query"
+    query: "What database does CloudSync use?"
+    expected_sources:
+      - "architecture/overview.md"
+    expected_answer_contains:
+      - "PostgreSQL"
+      - "Redis"
+    
+  - name: "Multi-hop query - deployment and config"
+    query: "How do I deploy to AWS and what environment variables do I need?"
+    expected_sources:
+      - "deployment/aws-setup.md"
+      - "configuration/environment-vars.md"
+    min_sources: 2
+    
+  - name: "Query requiring synthesis"
+    query: "Explain the data flow from client to database"
+    expected_sources:
+      - "architecture/data-flow.md"
+    max_response_time_ms: 5000
+    
+  - name: "Docker deployment question"
+    query: "How do I build and deploy with Docker?"
+    expected_sources:
+      - "deployment/docker-guide.md"
+    expected_answer_contains:
+      - "Docker"
+      - "build"
+      - "Dockerfile"
+    
+  - name: "Local development setup"
+    query: "How do I set up the development environment locally?"
+    expected_sources:
+      - "deployment/local-development.md"
+    expected_answer_contains:
+      - "prerequisites"
+      - "PostgreSQL"
+      - "Redis"
+      
+  - name: "Troubleshooting question"
+    query: "What should I do if I get connection refused errors?"
+    expected_sources:
+      - "configuration/troubleshooting.md"
+    
+  - name: "API usage question"
+    query: "How do I query the RAG API?"
+    expected_sources:
+      - "configuration/api-reference.md"
+    expected_answer_contains:
+      - "/api/v1/query"
+      - "POST"
+      
+  - name: "Scalability question"
+    query: "How can I scale the application to handle more users?"
+    expected_sources:
+      - "architecture/scalability.md"
+    expected_answer_contains:
+      - "horizontal"
+      - "scaling"
+      - "ECS"
+      - "Fargate"
+
+# Edge cases
+edge_cases:
+  - name: "Empty query"
+    query: ""
+    expected_error: true
+    
+  - name: "Very long query"
+    query: "How do I deploy to AWS using Docker containers with ECS Fargate and what are all the environment variables I need to configure for the database connection Redis cache and S3 storage and also how do I handle monitoring and logging?"
+    max_sources: 5
+    
+  - name: "Ambiguous query"
+    query: "How does it work?"
+    should_have_low_confidence: true
+    
+  - name: "Query with no relevant documents"
+    query: "How do I deploy to Azure or Google Cloud?"
+    min_confidence: 0.3
